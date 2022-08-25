@@ -41,7 +41,7 @@ class Trainer:
         
         # model
 
-        self.model =  ConvAE(self.config) if self.model_type == 'ConvAE' else AE(self.config)
+        self.model =  ConvAE(self.config, channel=1) if self.model_type == 'ConvAE' else AE(self.config)
         self.model.to(self.device)
 
         # optimizer
@@ -105,7 +105,6 @@ class Trainer:
 
         start_time = time.time()
 
-        total_loss = 0.
         best_val_loss = float('inf')
         best_val_epoch = self.offset if self.continuous else 0
 
@@ -115,6 +114,7 @@ class Trainer:
         for epoch in range(self.offset, self.offset + self.epochs):
             print(f"epoch : {epoch+1}")
             self.model.train()
+            total_loss = 0.
             for i, batch in tqdm(enumerate(self.dataloaders['train']), desc='training', total=len(self.dataloaders['train'])):
                 x, _ = batch[0], batch[1]
                 self.optimizer.zero_grad()
@@ -138,26 +138,28 @@ class Trainer:
                 total_loss += (loss.item() * x.size(0))
 
                 if i % self.log_interval == 0:
-                    print("Train epoch: {}\n [{}/{}({:.0f}%)]\t Step loss {:.6f}".format(epoch+1, i, len(self.dataloaders['train']), 100*i/len(self.dataloaders['train']), loss.item()))
+                    print("Train epoch: {} [{}/{}({:.0f}%)]\t Step loss {:.6f}\n".format(epoch+1, i, len(self.dataloaders['train']), 100*i/len(self.dataloaders['train']), loss.item()))
 
             
             valid_loss = self.valid(epoch)
-            print("====> Epoch: {}\t train loss: {:.4f}\t valid loss: {:.4f}\t elapsed time: {}".format(epoch+1, total_loss/len(self.dataloaders['train'].dataset), valid_loss, time.time()-start_time))
+            print("====> Epoch: {}\t train loss: {:.4f}\t valid loss: {:.4f}\t elapsed time: {} s".format(epoch+1, total_loss/len(self.dataloaders['train'].dataset), valid_loss, time.time()-start_time))
 
             train_losses.append(total_loss)
             valid_losses.append(valid_loss)
 
             if best_val_loss > valid_loss:
-                print('save model...')
+                print('save model...\n')
                 best_val_epoch = epoch+1
                 best_val_loss = valid_loss
                 save_model(self.model_path, best_val_epoch, best_val_loss, self.model.state_dict(), self.optimizer.state_dict())
         
-        print(f"Best Val Loss:{best_val_loss:.4f}\nBest Epoch:{best_val_epoch}")
+        print(f"Best Epoch: {best_val_epoch}\nBest Val Loss: {best_val_loss:.4f}")
+
         return {
             'train_losses' : train_losses,
             'valid_losses' : valid_losses
         }
+
 
     def valid(self, epoch):
         self.model.eval()

@@ -1,8 +1,8 @@
 {
     "data_path": "./data",
     "img_path": "./result",
-    "model_type": "CAE",
-    "model_name": "CAE_10epochs",
+    "model_type": "ConvAE",
+    "model_name": "ConvAE_100epochs",
     "log_interval": 100,
     "grayscale": 1,
 
@@ -10,12 +10,14 @@
     "noise_mean": 0,
     "noise_std": 0.1,
 
-    "lr": 1e-6,
-    "epochs": 10,
+    "lr": 1e-4,
+    "epochs": 100,
     "val_propotion": 0.1,
     "batch_size": 16,
 
     "hidden_dim": 500,
     "latent_dim": 20,
+    "kernel_sizes": [3, 3, 3],
+    "conv_dims": [10, 20, 50],
     "dropout": 0.1
 }
