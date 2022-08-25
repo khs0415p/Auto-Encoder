@@ -88,9 +88,7 @@ class Trainer:
     def cae_loss_fn(self, y, x, lamda=1e-4):
         
         # term1
-        criterion = nn.MSELoss()
-        loss1 = criterion(y, x)
-        # torch.mean(torch.mean((x-y)**2, dim=0))
+        loss1 = torch.mean(torch.mean((x-y)**2, dim=0))
 
         # term2
         enc_weights = [self.model.encoder[i].weight for i in reversed(range(0, len(self.model.encoder), 3))]
